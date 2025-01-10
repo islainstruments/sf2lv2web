@@ -1,0 +1,144 @@
+.piano-keyboard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+}
+
+.keyboard-container {
+  position: relative;
+  width: 100%;
+  max-width: 754px; /* 29 white keys * 26px */
+  height: 120px;
+  background-color: #1a1a1a;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 0 auto; /* Center the container */
+}
+
+.piano-key {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.white {
+  background-color: white;
+  width: 26px;
+  height: 100px;
+  border: 1px solid #333;
+  border-radius: 0 0 2px 2px;
+  z-index: 1;
+}
+
+.black {
+  background-color: #333;
+  width: 16px;
+  height: 65px;
+  border-radius: 0 0 2px 2px;
+  z-index: 2;
+  color: #666;
+}
+
+.white.active {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+
+.black.active {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+
+/* Calculate octave offset - adjusted for new key width */
+.white:nth-child(12n + 1) { left: calc(0 * 26px + var(--octave-offset, 0px)); }     /* C */
+.white:nth-child(12n + 3) { left: calc(1 * 26px + var(--octave-offset, 0px)); }     /* D */
+.white:nth-child(12n + 5) { left: calc(2 * 26px + var(--octave-offset, 0px)); }     /* E */
+.white:nth-child(12n + 6) { left: calc(3 * 26px + var(--octave-offset, 0px)); }     /* F */
+.white:nth-child(12n + 8) { left: calc(4 * 26px + var(--octave-offset, 0px)); }     /* G */
+.white:nth-child(12n + 10) { left: calc(5 * 26px + var(--octave-offset, 0px)); }    /* A */
+.white:nth-child(12n + 12) { left: calc(6 * 26px + var(--octave-offset, 0px)); }    /* B */
+
+.black:nth-child(12n + 2) { left: calc(0.7 * 26px + var(--octave-offset, 0px)); }   /* C# */
+.black:nth-child(12n + 4) { left: calc(1.7 * 26px + var(--octave-offset, 0px)); }   /* D# */
+.black:nth-child(12n + 7) { left: calc(3.7 * 26px + var(--octave-offset, 0px)); }   /* F# */
+.black:nth-child(12n + 9) { left: calc(4.7 * 26px + var(--octave-offset, 0px)); }   /* G# */
+.black:nth-child(12n + 11) { left: calc(5.7 * 26px + var(--octave-offset, 0px)); }  /* A# */
+
+/* Set octave offsets - adjusted for new spacing */
+.piano-key:nth-child(n+1):nth-child(-n+12) {
+  --octave-offset: 0px;
+}
+
+.piano-key:nth-child(n+13):nth-child(-n+24) {
+  --octave-offset: 182px; /* (7 white keys * 26px) */
+}
+
+.piano-key:nth-child(n+25):nth-child(-n+36) {
+  --octave-offset: 364px; /* (14 white keys * 26px) */
+}
+
+.piano-key:nth-child(n+37):nth-child(-n+48) {
+  --octave-offset: 546px; /* (21 white keys * 26px) */
+}
+
+/* Position C6 at the end */
+.piano-key[data-note="C6"] {
+  left: 728px !important; /* (28 white keys * 26px) */
+}
+
+/* Show C6 label */
+.piano-key[data-note="C6"] .key-label {
+  display: flex;
+}
+
+.key-label {
+  display: none;
+  font-size: 7px;
+  font-family: monospace;
+  color: #666;
+  font-weight: bold;
+}
+
+/* Only show labels for C keys */
+.white:nth-child(12n + 1) .key-label {
+  display: flex;
+}
+
+.loading {
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  padding: 20px;
+}
+
+.midi-controls {
+  width: 100%;
+  max-width: 754px;
+  margin: 0 auto 10px auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.midi-select {
+  background-color: #1a1a1a;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.midi-select:hover {
+  border-color: #666;
+}
+
+.midi-select:focus {
+  outline: none;
+  border-color: #888;
+} 

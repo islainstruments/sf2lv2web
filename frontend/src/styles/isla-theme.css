@@ -1,0 +1,169 @@
+:root {
+  /* Core colors */
+  --isla-background: #000000;
+  --isla-background-hover: rgba(255, 255, 255, 0.05);
+  --isla-text: #ffffff;
+  --isla-text-muted: rgba(255, 255, 255, 0.7);
+  --isla-heading: #ffffff;
+  --isla-accent: #ff0000;
+  --isla-accent-hover: #cc0000;
+  --isla-white: #ffffff;
+  
+  /* UI elements */
+  --isla-border-color: rgba(255, 255, 255, 0.2);
+  --isla-card-background: rgba(255, 255, 255, 0.05);
+  --isla-header-background: rgba(0, 0, 0, 0.8);
+  --isla-footer-background: rgba(0, 0, 0, 0.9);
+  
+  /* Status colors */
+  --isla-error: #ff3333;
+  --isla-error-background: rgba(255, 51, 51, 0.1);
+  --isla-success: #00ff00;
+  --isla-success-background: rgba(0, 255, 0, 0.1);
+}
+
+/* Global styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--isla-background);
+  color: var(--isla-text);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--isla-font-family);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+/* Links */
+a {
+  color: var(--isla-white);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--isla-accent);
+}
+
+/* Buttons */
+.isla-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background: transparent;
+  border: 2px solid var(--isla-white);
+  color: var(--isla-white);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.isla-button:hover {
+  background: var(--isla-white);
+  color: var(--isla-black);
+}
+
+.isla-button--primary {
+  background: var(--isla-white);
+  color: var(--isla-black);
+}
+
+.isla-button--primary:hover {
+  background: transparent;
+  color: var(--isla-white);
+}
+
+/* Forms */
+.isla-input {
+  background: transparent;
+  border: 2px solid var(--isla-white);
+  color: var(--isla-white);
+  padding: 12px;
+  width: 100%;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.isla-input:focus {
+  outline: none;
+  border-color: var(--isla-accent);
+}
+
+.isla-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Layout */
+.isla-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Cards/Panels */
+.isla-card {
+  background: var(--isla-dark);
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Utility classes */
+.text-center {
+  text-align: center;
+}
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+/* File Upload */
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.active {
+  animation: pulse 1s infinite;
+} 

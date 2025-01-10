@@ -1,0 +1,51 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--isla-background);
+  color: var(--isla-text);
+}
+
+.app-header {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--isla-header-background);
+  border-bottom: 1px solid var(--isla-border-color);
+}
+
+.app-header .logo {
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+.app-header h1 {
+  margin: 0 0 10px;
+  font-size: 2.5em;
+  color: var(--isla-heading);
+}
+
+.app-header p {
+  margin: 0;
+  font-size: 1.2em;
+  color: var(--isla-text-muted);
+}
+
+main {
+  flex: 1;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  background: var(--isla-footer-background);
+  border-top: 1px solid var(--isla-border-color);
+}
+
+footer p {
+  margin: 0;
+  color: var(--isla-text-muted);
+} 

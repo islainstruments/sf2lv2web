@@ -1,0 +1,55 @@
+.app {
+  text-align: center;
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  padding: 20px;
+}
+
+header {
+  margin-bottom: 40px;
+}
+
+.logo {
+  width: 200px;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin: 0;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 1.1em;
+  margin: 10px 0 0;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+nav {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+} 

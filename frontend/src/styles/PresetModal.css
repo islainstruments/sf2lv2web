@@ -1,0 +1,133 @@
+.preset-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.preset-modal-content {
+  background-color: #1a1a1a;
+  padding: 30px;
+  border-radius: 8px;
+  min-width: 1120px; /* Slightly wider than the keyboard container + padding */
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.preset-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.preset-modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.preset-modal-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.preset-modal-close:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.preset-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.preset-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+}
+
+.preset-info-label {
+  font-weight: bold;
+  color: #888;
+}
+
+.preset-info-value {
+  color: white;
+}
+
+.preset-section {
+  margin-top: 8px;
+}
+
+.preset-section h4 {
+  color: #888;
+  font-size: 0.9em;
+  margin: 0 0 12px 0;
+  font-weight: 500;
+}
+
+.instrument-block {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  padding: 12px;
+}
+
+.instrument-header {
+  color: #fff;
+  font-size: 0.9em;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.sample-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sample-item {
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.sample-name {
+  color: #fff;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+}
+
+.sample-details {
+  display: flex;
+  gap: 12px;
+  color: #888;
+  font-size: 0.8em;
+} 
