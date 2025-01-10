@@ -14,7 +14,13 @@ const SoundFontPreview: React.FC<SoundFontPreviewProps> = ({ metadata, soundFont
 
   const handlePresetClick = (preset: Preset) => {
     setSelectedPreset(preset);
-    synth.resetControllers();  // Reset all controllers
+    
+    // Set default CC values
+    synth.controllerChange(0, 74, 127);  // Filter cutoff to max
+    synth.controllerChange(0, 71, 0);    // Filter resonance to min
+    synth.controllerChange(0, 73, 0);    // Attack time to min
+    
+    // Change the preset
     synth.programChange(0, preset.program); // Channel 0, program number
     synth.controllerChange(0, 0, preset.bank); // Channel 0, controller 0 (bank select), bank number
   };

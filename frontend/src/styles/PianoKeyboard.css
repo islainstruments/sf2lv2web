@@ -87,6 +87,7 @@
 /* Position C6 at the end */
 .piano-key[data-note="C6"] {
   left: 728px !important; /* (28 white keys * 26px) */
+  z-index: 1;
 }
 
 /* Show C6 label */

@@ -9,7 +9,7 @@ interface PianoKeyboardProps {
 }
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const START_OCTAVE = 2;
+const START_OCTAVE = 1;
 const NUM_OCTAVES = 4;
 
 const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) => {
@@ -36,7 +36,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
 
   const getMidiNote = (note: string, octave: number) => {
     const noteIndex = NOTES.indexOf(note);
-    return (octave * 12) + noteIndex + 36; // 36 is C2 in MIDI
+    return (octave * 12) + noteIndex + 24; // 24 is C1 in MIDI
   };
 
   // Mouse event handlers
@@ -192,6 +192,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
     keys.push(
       <div
         key="C6"
+        data-note="C6"
         className={`piano-key white ${activeNotes.has(c6MidiNote) ? 'active' : ''}`}
         onMouseDown={() => handleMouseDown(c6MidiNote)}
         onMouseEnter={() => handleMouseEnter(c6MidiNote)}
