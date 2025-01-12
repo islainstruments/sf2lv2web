@@ -1,120 +1,49 @@
 .soundfont-preview {
-  padding: 20px;
-  color: #fff;
   width: 100%;
+  color: #fff;
+  padding: 0;
 }
 
 .metadata-section {
   margin-bottom: 20px;
   width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .metadata-section h2 {
   color: #fff;
-  margin: 0 0 10px 0;
-  font-size: 20px;
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #fff, #aaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
 .metadata-details {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 16px;
   color: #aaa;
   width: 100%;
   font-size: 14px;
+  font-family: var(--font-mono);
 }
 
 .keyboard-section {
-  margin: 10px 0;
+  margin: 24px 0;
   width: 100%;
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.8);
   padding: 0;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.presets-section {
-  width: 100%;
-}
-
-.presets-section h3 {
-  color: #fff;
-  margin: 0 0 16px 0;
-  font-size: 16px;
-}
-
-.presets-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  width: 100%;
-}
-
-.preset-column {
-  border: 1px solid #333;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.presets-header {
-  display: grid;
-  grid-template-columns: 60px 60px 1fr;
-  padding: 8px 12px;
-  background: #333;
-  font-weight: 500;
-  color: #fff;
-  border-bottom: 1px solid #444;
-  font-size: 13px;
-}
-
-.presets-list {
-  width: 100%;
-}
-
-.preset-row {
-  display: grid;
-  grid-template-columns: 60px 60px 1fr;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  border-bottom: 1px solid #333;
-  font-size: 13px;
-}
-
-.preset-row:nth-child(odd) {
-  background: #222;
-}
-
-.preset-row:nth-child(even) {
-  background: #2a2a2a;
-}
-
-.preset-row:hover {
-  background: #333;
-}
-
-.preset-row.selected {
-  background: #2c4f7c;
-}
-
-.preset-row.selected:hover {
-  background: #385d8c;
-}
-
-.col {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.name-col {
-  color: #fff;
-}
-
-.effects-container {
-  margin: 1rem 0;
-  width: 100%;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    0 0 40px rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 } 

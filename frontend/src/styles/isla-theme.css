@@ -152,7 +152,7 @@ a:hover {
 }
 
 /* Animations */
-@keyframes pulse {
+/* @keyframes pulse {
   0% {
     transform: scale(1);
   }
@@ -162,8 +162,8 @@ a:hover {
   100% {
     transform: scale(1);
   }
-}
+} */
 
 .active {
-  animation: pulse 1s infinite;
+  /* animation: pulse 1s infinite; */
 } 

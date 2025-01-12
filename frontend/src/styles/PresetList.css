@@ -1,0 +1,113 @@
+/* Import dot matrix font */
+@import url('https://fonts.googleapis.com/css2?family=Doto&display=swap');
+
+/* Preset List Styles */
+.presets-section {
+  width: 100%;
+}
+
+.presets-section h3 {
+  color: #fff;
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #fff, #aaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.presets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.preset-column {
+  background: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.presets-header {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  padding: 4px 8px;
+  background: #252525;
+  color: #888;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.presets-list {
+  width: 100%;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.preset-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: 'Doto', monospace;
+  font-size: 14px;
+  background: #1d1d1d;
+  font-weight: 600;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: none;
+  font-smooth: never;
+}
+
+.preset-row .col {
+  color: rgb(255, 68, 68);
+  padding: 2px 4px;
+  opacity: 1;
+}
+
+.preset-row:hover {
+  background: #252525;
+}
+
+.preset-row.selected {
+  background: #2a2020;
+}
+
+.preset-row.selected .col {
+  color: rgb(255, 68, 68);
+  opacity: 1;
+}
+
+.col {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.name-col {
+  margin-left: 4px;
+}
+
+/* Scrollbar Styles */
+.presets-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.presets-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.presets-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+}
+
+.presets-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 68, 68, 0.2);
+} 

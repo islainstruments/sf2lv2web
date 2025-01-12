@@ -66,10 +66,86 @@ interface LCDProps {
   midiMessage?: MidiMessage | null;
 }
 
+interface ArpeggiatorState {
+  isOn: boolean;
+  rate: '1/4' | '1/8' | '1/16';
+  direction: 'up' | 'down' | 'updown' | 'random';
+  octaveRange: number;
+  hold: boolean;
+  bpm: number;
+}
+
+interface ArpNote {
+  note: number;
+  velocity: number;
+  timestamp: number;
+}
+
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const START_OCTAVE = 1;
 const NUM_OCTAVES = 4;
 
+// Message display system
+type MessageType = 'MIDI' | 'PARAMETER' | 'PRESET' | 'TEMPORARY';
+interface DisplayMessage {
+  line1: string;
+  line2: string;
+  type: MessageType;
+  timestamp: number;
+}
+
+// Helper functions
+const formatMidiMessage = (event: any): { line1: string, line2: string } => {
+  if (event.type === 'noteon') {
+    return {
+      line1: `Note On: ${event.note.name}${event.note.octave}`,
+      line2: `Velocity: ${Math.round(event.velocity * 127)}`
+    };
+  } else if (event.type === 'noteoff') {
+    return {
+      line1: `Note Off: ${event.note.name}${event.note.octave}`,
+      line2: ''
+    };
+  } else if (event.type === 'controlchange') {
+    const ccNames: { [key: number]: string } = {
+      1: 'MOD WHEEL',
+      74: 'CUTOFF',
+      71: 'RESONANCE',
+      73: 'ATTACK',
+      75: 'DECAY',
+      70: 'SUSTAIN',
+      72: 'RELEASE',
+      91: 'REVERB',
+      93: 'CHORUS',
+      7: 'VOLUME'
+    };
+    const ccNumber = event.controller.number;
+    const ccValue = Math.round(event.value * 127);
+    const ccName = ccNames[ccNumber];
+    
+    return {
+      line1: `CC ${ccNumber}: ${ccValue}`,
+      line2: ccName || ''
+    };
+  } else if (event.type === 'pitchbend') {
+    const bendValue = event.value.toFixed(2);
+    return {
+      line1: `Pitch Bend: ${bendValue}`,
+      line2: ''
+    };
+  }
+  return {
+    line1: event.type.toUpperCase(),
+    line2: ''
+  };
+};
+
+// Helper functions
+const lcdAlignCenter = (text: string, size = 16) => {
+  return text.substr(0, size);
+};
+
+// Component definitions
 const Knob: React.FC<KnobProps> = ({
   value,
   onChange,
@@ -258,96 +334,13 @@ const Slider: React.FC<SliderProps> = ({
   );
 };
 
-const lcdAlignCenter = (text: string, size = 16) => {
-  return text.substr(0, size);
-};
-
-const formatMidiMessage = (event: any): { line1: string, line2: string } => {
-  if (event.type === 'noteon') {
-    return {
-      line1: `Note On: ${event.note.name}${event.note.octave}`,
-      line2: `Velocity: ${Math.round(event.velocity * 127)}`
-    };
-  } else if (event.type === 'noteoff') {
-    return {
-      line1: `Note Off: ${event.note.name}${event.note.octave}`,
-      line2: ''
-    };
-  } else if (event.type === 'controlchange') {
-    const ccNames: { [key: number]: string } = {
-      1: 'MOD WHEEL',
-      74: 'CUTOFF',
-      71: 'RESONANCE',
-      73: 'ATTACK',
-      75: 'DECAY',
-      70: 'SUSTAIN',
-      72: 'RELEASE',
-      91: 'REVERB',
-      93: 'CHORUS',
-      7: 'VOLUME'
-    };
-    const ccNumber = event.controller.number;
-    const ccValue = Math.round(event.value * 127);
-    const ccName = ccNames[ccNumber];
-    
-    return {
-      line1: `CC ${ccNumber}: ${ccValue}`,
-      line2: ccName || ''
-    };
-  } else if (event.type === 'pitchbend') {
-    const bendValue = event.value.toFixed(2);
-    return {
-      line1: `Pitch Bend: ${bendValue}`,
-      line2: ''
-    };
-  }
-  return {
-    line1: event.type.toUpperCase(),
-    line2: ''
-  };
-};
-
 const LCD: React.FC<LCDProps> = ({ 
   line1, 
   line2, 
   width = "100%", 
   height = "auto", 
-  backlit = true,
-  midiMessage = null
+  backlit = true
 }) => {
-  const [displayLines, setDisplayLines] = useState({ line1, line2 });
-  const [isShowingMidi, setIsShowingMidi] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
-
-  useEffect(() => {
-    if (!midiMessage) {
-      setDisplayLines({ line1, line2 });
-      return;
-    }
-
-    // Show MIDI message
-    setIsShowingMidi(true);
-    const formattedMessage = formatMidiMessage(midiMessage.event);  // Pass the raw event
-    setDisplayLines(formattedMessage);
-
-    // Clear existing timeout if there is one
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Set new timeout to revert to preset display
-    timeoutRef.current = setTimeout(() => {
-      setIsShowingMidi(false);
-      setDisplayLines({ line1, line2 });
-    }, 2000);
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [midiMessage, line1, line2]);
-
   const bgcolor = backlit ? '#111111' : '#000000';
   return (
     <svg className="LCD" viewBox="0 0 78 32" width={width} height={height}>
@@ -416,7 +409,7 @@ const LCD: React.FC<LCDProps> = ({
         transform="translate(-3.41 -3.05)"
         style={{whiteSpace: 'pre'}}
         filter="url(#glow)"
-      >{lcdAlignCenter(displayLines.line1)}</text>
+      >{lcdAlignCenter(line1)}</text>
       <text
         fill="#ff4444"
         x="12"
@@ -427,7 +420,7 @@ const LCD: React.FC<LCDProps> = ({
         transform="translate(-3.41 -3.05)"
         style={{whiteSpace: 'pre'}}
         filter="url(#glow)"
-      >{lcdAlignCenter(displayLines.line2)}</text>
+      >{lcdAlignCenter(line2)}</text>
       <defs>
         <filter id="glow">
           <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
@@ -438,6 +431,99 @@ const LCD: React.FC<LCDProps> = ({
         </filter>
       </defs>
     </svg>
+  );
+};
+
+const ArpeggiatorControls: React.FC<{
+  state: ArpeggiatorState;
+  onChange: (newState: Partial<ArpeggiatorState>) => void;
+  onBpmChange?: (bpm: number) => void;
+}> = ({ state, onChange, onBpmChange }) => {
+  return (
+    <div className="arp-controls">
+      <div className="arp-toggle-group">
+        <div className="arp-toggle">
+          <input
+            type="checkbox"
+            checked={state.isOn}
+            onChange={(e) => onChange({ isOn: e.target.checked })}
+            className="toggle-switch"
+          />
+          <span className="arp-header">ARP</span>
+        </div>
+        <div className="arp-hold">
+          <input
+            type="checkbox"
+            checked={state.hold}
+            onChange={(e) => onChange({ hold: e.target.checked })}
+            className="toggle-switch"
+          />
+          <span>HOLD</span>
+        </div>
+      </div>
+      <div className="arp-rates">
+        {(['1/4', '1/8', '1/16'] as const).map((rate) => (
+          <label key={rate} className="radio-label">
+            <input
+              type="radio"
+              name="rate"
+              value={rate}
+              checked={state.rate === rate}
+              onChange={() => onChange({ rate })}
+              className="radio-input"
+            />
+            <span>{rate}</span>
+          </label>
+        ))}
+      </div>
+      <div className="arp-directions">
+        {([
+          { value: 'up', label: '↑' },
+          { value: 'down', label: '↓' },
+          { value: 'updown', label: '↕' },
+          { value: 'random', label: '?' }
+        ] as const).map(({ value, label }) => (
+          <label key={value} className="radio-label">
+            <input
+              type="radio"
+              name="direction"
+              value={value}
+              checked={state.direction === value}
+              onChange={() => onChange({ direction: value })}
+              className="radio-input"
+            />
+            <span>{label}</span>
+          </label>
+        ))}
+      </div>
+      <div className="arp-octave">
+        <Knob
+          value={state.octaveRange}
+          onChange={(value) => onChange({ octaveRange: value })}
+          min={1}
+          max={3}
+          size={30}
+          label="OCT"
+          step={1}
+        />
+      </div>
+      <div className="arp-bpm">
+        <Knob
+          value={state.bpm}
+          onChange={(value) => {
+            if (onBpmChange) {
+              onBpmChange(value);
+            }
+            onChange({ bpm: value });
+          }}
+          min={60}
+          max={200}
+          size={30}
+          label="BPM"
+          step={1}
+        />
+      </div>
+    </div>
   );
 };
 
@@ -487,188 +573,407 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
   // Add isUpdatingFromMidi flag
   const isUpdatingFromMidi = useRef(false);
 
-  // Memoize handlers to prevent unnecessary re-renders
+  // Add arpeggiator state
+  const [arpeggiator, setArpeggiator] = useState<ArpeggiatorState>({
+    isOn: false,
+    rate: '1/8',
+    direction: 'up',
+    octaveRange: 1,
+    hold: false,
+    bpm: 120
+  });
+
+  // Add arpeggiator state
+  const [heldNotes, setHeldNotes] = useState<ArpNote[]>([]);
+  const arpIntervalRef = useRef<number>();
+  const currentNoteRef = useRef<number | null>(null);
+  const patternIndexRef = useRef(0);
+
+  // Add utility functions for arpeggiator
+  const getArpRate = (rate: '1/4' | '1/8' | '1/16'): number => {
+    const beatMs = 60000 / arpeggiator.bpm;
+    switch (rate) {
+      case '1/4': return beatMs;
+      case '1/8': return beatMs / 2;
+      case '1/16': return beatMs / 4;
+    }
+  };
+
+  const generateArpPattern = (notes: ArpNote[]): { note: number; velocity: number }[] => {
+    if (notes.length === 0) return [];
+    
+    const sortedNotes = [...notes].sort((a, b) => a.note - b.note);
+    const octaveNotes: { note: number; velocity: number }[] = [];
+    
+    // Generate notes for each octave in range
+    for (let octave = 0; octave < arpeggiator.octaveRange; octave++) {
+      sortedNotes.forEach(({ note, velocity }) => {
+        octaveNotes.push({
+          note: note + (octave * 12),
+          velocity
+        });
+      });
+    }
+
+    switch (arpeggiator.direction) {
+      case 'up':
+        return octaveNotes;
+      case 'down':
+        return octaveNotes.reverse();
+      case 'updown':
+        return [...octaveNotes, ...octaveNotes.slice(1, -1).reverse()];
+      case 'random':
+        return octaveNotes.sort(() => Math.random() - 0.5);
+    }
+  };
+
+  const stopArpeggiator = useCallback(() => {
+    if (currentNoteRef.current !== null) {
+      synth.noteOff(0, currentNoteRef.current);
+      currentNoteRef.current = null;
+    }
+    if (arpIntervalRef.current) {
+      window.clearInterval(arpIntervalRef.current);
+      arpIntervalRef.current = undefined;
+    }
+    patternIndexRef.current = 0;
+  }, [synth]);
+
+  const startArpeggiator = useCallback(() => {
+    if (!arpeggiator.isOn || heldNotes.length === 0) return;
+    
+    stopArpeggiator();
+    
+    const pattern = generateArpPattern(heldNotes);
+    if (pattern.length === 0) return;
+
+    const playNext = () => {
+      if (currentNoteRef.current !== null) {
+        synth.noteOff(0, currentNoteRef.current);
+      }
+
+      if (heldNotes.length === 0 && !arpeggiator.hold) {
+        stopArpeggiator();
+        return;
+      }
+
+      const noteToPlay = pattern[patternIndexRef.current];
+      synth.noteOn(0, noteToPlay.note, noteToPlay.velocity);
+      currentNoteRef.current = noteToPlay.note;
+      
+      patternIndexRef.current = (patternIndexRef.current + 1) % pattern.length;
+    };
+
+    playNext(); // Play first note immediately
+    arpIntervalRef.current = window.setInterval(playNext, getArpRate(arpeggiator.rate));
+  }, [arpeggiator, heldNotes, synth, stopArpeggiator]);
+
+  // Message display system
+  const [currentMessage, setCurrentMessage] = useState<DisplayMessage>({
+    line1: selectedPreset?.presetName || 'No Preset',
+    line2: selectedPreset ? `Bank ${selectedPreset.bank} • ${selectedPreset.program}` : '',
+    type: 'PRESET',
+    timestamp: Date.now()
+  });
+
+  const messageTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastMidiTimestampRef = useRef<number>(0);
+
+  // Function to show a message with proper priority handling
+  const showMessage = useCallback((message: Omit<DisplayMessage, 'timestamp'>) => {
+    const now = Date.now();
+
+    // Clear any existing timeout
+    if (messageTimeoutRef.current) {
+      clearTimeout(messageTimeoutRef.current);
+    }
+
+    // Priority and timing rules:
+    // 1. MIDI messages within 50ms of each other are batched
+    // 2. PARAMETER changes always show and reset timeout
+    // 3. TEMPORARY messages (like BPM) always show and reset timeout
+    // 4. PRESET is the fallback state
+
+    if (message.type === 'MIDI') {
+      // Only update if it's been more than 50ms since last MIDI message
+      if (now - lastMidiTimestampRef.current > 50) {
+        lastMidiTimestampRef.current = now;
+        setCurrentMessage({ ...message, timestamp: now });
+      }
+    } else {
+      setCurrentMessage({ ...message, timestamp: now });
+    }
+
+    // Set timeout to return to preset display
+    if (message.type !== 'PRESET') {
+      messageTimeoutRef.current = setTimeout(() => {
+        setCurrentMessage({
+          line1: selectedPreset?.presetName || 'No Preset',
+          line2: selectedPreset ? `Bank ${selectedPreset.bank} • ${selectedPreset.program}` : '',
+          type: 'PRESET',
+          timestamp: Date.now()
+        });
+      }, 2000);
+    }
+  }, [selectedPreset]);
+
+  // MIDI message handler
+  const handleMidiMessage = useCallback((event: any) => {
+    const formattedMessage = formatMidiMessage(event);
+    showMessage({
+      ...formattedMessage,
+      type: 'MIDI'
+    });
+
+    // Handle MIDI CC messages
+    if (event.type === 'controlchange' && typeof event.value === 'number' && typeof event.controller.number === 'number') {
+      isUpdatingFromMidi.current = true;
+      const midiValue = Math.round(event.value * 127);
+      
+      // Update UI values based on CC number
+      switch (event.controller.number) {
+        case CC.MOD_WHEEL:
+          setModulationValue(event.value);
+          synth.controllerChange(0, CC.MOD_WHEEL, midiValue);
+          break;
+        case CC.FILTER_CUTOFF:
+          setFilterCutoff(midiValue);
+          synth.controllerChange(0, CC.FILTER_CUTOFF, midiValue);
+          break;
+        case CC.FILTER_RESONANCE:
+          setFilterResonance(midiValue);
+          synth.controllerChange(0, CC.FILTER_RESONANCE, midiValue);
+          break;
+        case CC.ATTACK_TIME:
+          setAttackTime(midiValue);
+          synth.controllerChange(0, CC.ATTACK_TIME, midiValue);
+          break;
+        case CC.DECAY_TIME:
+          setDecayTime(midiValue);
+          synth.controllerChange(0, CC.DECAY_TIME, midiValue);
+          break;
+        case CC.SUSTAIN_LEVEL:
+          setSustainLevel(midiValue);
+          synth.controllerChange(0, CC.SUSTAIN_LEVEL, midiValue);
+          break;
+        case CC.RELEASE_TIME:
+          setReleaseTime(midiValue);
+          synth.controllerChange(0, CC.RELEASE_TIME, midiValue);
+          break;
+        default:
+          synth.controllerChange(0, event.controller.number, midiValue);
+          break;
+      }
+      
+      setTimeout(() => {
+        isUpdatingFromMidi.current = false;
+      }, 0);
+    }
+    
+    // Handle pitch bend
+    if (event.type === 'pitchbend' && typeof event.value === 'number') {
+      const wheelValue = (event.value + 1) / 2;
+      setPitchBendValue(wheelValue);
+      const pitchBendValue = Math.round((event.value + 1) * 8191);
+      synth.pitchWheel(0, 0, pitchBendValue);
+    }
+  }, [showMessage, synth]);
+
+  // Parameter change handler
+  const handleParameterChange = useCallback((name: string, value: number, ccNumber?: number) => {
+    showMessage({
+      line1: ccNumber ? `CC ${ccNumber}: ${value}` : name,
+      line2: name,
+      type: 'PARAMETER'
+    });
+  }, [showMessage]);
+
+  // BPM change handler
+  const handleBpmChange = useCallback((bpm: number) => {
+    showMessage({
+      line1: 'TEMPO',
+      line2: `${bpm} BPM`,
+      type: 'TEMPORARY'
+    });
+  }, [showMessage]);
+
+  // Update preset display
+  useEffect(() => {
+    showMessage({
+      line1: selectedPreset?.presetName || 'No Preset',
+      line2: selectedPreset ? `Bank ${selectedPreset.bank} • ${selectedPreset.program}` : '',
+      type: 'PRESET'
+    });
+  }, [selectedPreset, showMessage]);
+
+  // Clean up timeouts
+  useEffect(() => {
+    return () => {
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Parameter handlers
   const handleFilterCutoffChange = useCallback((value: number) => {
     setFilterCutoff(value);
     if (!isUpdatingFromMidi.current) {
       synth.controllerChange(0, CC.FILTER_CUTOFF, value);
+      handleParameterChange('CUTOFF', value, CC.FILTER_CUTOFF);
     }
-  }, [synth]);
+  }, [synth, handleParameterChange]);
 
   const handleFilterResonanceChange = useCallback((value: number) => {
     setFilterResonance(value);
     if (!isUpdatingFromMidi.current) {
       synth.controllerChange(0, CC.FILTER_RESONANCE, value);
+      handleParameterChange('RESONANCE', value, CC.FILTER_RESONANCE);
     }
-  }, [synth]);
+  }, [synth, handleParameterChange]);
 
   const handleAttackChange = useCallback((value: number) => {
     setAttackTime(value);
     if (!isUpdatingFromMidi.current) {
       synth.controllerChange(0, CC.ATTACK_TIME, value);
+      handleParameterChange('ATTACK', value, CC.ATTACK_TIME);
     }
-  }, [synth]);
+  }, [synth, handleParameterChange]);
 
   const handleDecayChange = useCallback((value: number) => {
     setDecayTime(value);
     if (!isUpdatingFromMidi.current) {
       synth.controllerChange(0, CC.DECAY_TIME, value);
+      handleParameterChange('DECAY', value, CC.DECAY_TIME);
     }
-  }, [synth]);
+  }, [synth, handleParameterChange]);
 
   const handleSustainChange = useCallback((value: number) => {
     setSustainLevel(value);
     if (!isUpdatingFromMidi.current) {
       synth.controllerChange(0, CC.SUSTAIN_LEVEL, value);
+      handleParameterChange('SUSTAIN', value, CC.SUSTAIN_LEVEL);
     }
-  }, [synth]);
+  }, [synth, handleParameterChange]);
 
   const handleReleaseChange = useCallback((value: number) => {
     setReleaseTime(value);
     if (!isUpdatingFromMidi.current) {
       synth.controllerChange(0, CC.RELEASE_TIME, value);
+      handleParameterChange('RELEASE', value, CC.RELEASE_TIME);
     }
-  }, [synth]);
+  }, [synth, handleParameterChange]);
 
-  // LFO handlers
-  const handleModWheelChange = (value: number) => {
-    setModWheel(value);
-    synth.controllerChange(0, CC.MOD_WHEEL, value);
-  };
-
-  const handleTremoloChange = (value: number) => {
-    setTremolo(value);
-    synth.controllerChange(0, CC.TREMOLO, value);
-  };
-
-  // Modulation Envelope handlers
-  const handleModEnvToFilterChange = (value: number) => {
-    setModEnvToFilter(value);
-    synth.controllerChange(0, CC.MOD_ENV_TO_FILTER, value);
-  };
-
-  const handleModEnvDelayChange = (value: number) => {
-    setModEnvDelay(value);
-    synth.controllerChange(0, CC.MOD_ENV_DELAY, value);
-  };
-
-  const handleModEnvAttackChange = (value: number) => {
-    setModEnvAttack(value);
-    synth.controllerChange(0, CC.MOD_ENV_ATTACK, value);
-  };
-
-  const handleModEnvHoldChange = (value: number) => {
-    setModEnvHold(value);
-    synth.controllerChange(0, CC.MOD_ENV_HOLD, value);
-  };
-
-  const handleModEnvDecayChange = (value: number) => {
-    setModEnvDecay(value);
-    synth.controllerChange(0, CC.MOD_ENV_DECAY, value);
-  };
-
-  const handleModEnvSustainChange = (value: number) => {
-    setModEnvSustain(value);
-    synth.controllerChange(0, CC.MOD_ENV_SUSTAIN, value);
-  };
-
-  const handleModEnvReleaseChange = (value: number) => {
-    setModEnvRelease(value);
-    synth.controllerChange(0, CC.MOD_ENV_RELEASE, value);
-  };
-
-  // Effects handlers
-  const handleReverbLevelChange = (value: number) => {
-    setReverbLevel(value);
-    synth.controllerChange(0, CC.REVERB_LEVEL, value);
-  };
-
-  const handleChorusLevelChange = (value: number) => {
-    setChorusLevel(value);
-    synth.controllerChange(0, CC.CHORUS_LEVEL, value);
-  };
-
-  // Batch wheel updates
-  const handlePitchBend = useCallback((value: number) => {
-    requestAnimationFrame(() => {
-      setPitchBendValue(value);
-      const pitchBendValue = Math.round(value * 16383);
-      synth.pitchWheel(0, 0, pitchBendValue);
-    });
-  }, [synth]);
-
-  const handleModulation = useCallback((value: number) => {
-    requestAnimationFrame(() => {
-      setModulationValue(value);
-      const modulationValue = Math.round(value * 127);
-      synth.controllerChange(0, 1, modulationValue);
-    });
-  }, [synth]);
-
-  // When preset changes, only set filter defaults
-  useEffect(() => {
-    if (synth) {
-      synth.controllerChange(0, CC.FILTER_CUTOFF, 127);
-      synth.controllerChange(0, CC.FILTER_RESONANCE, 0);
-    }
-  }, [selectedPreset, synth]);
-
-  const handleNoteOn = useCallback((midiNote: number) => {
-    synth.noteOn(0, midiNote, 127); // Channel 0, max velocity
+  // Note handling system
+  const handleNoteOn = useCallback((midiNote: number, velocity: number = 127) => {
+    // Always update the active notes set first
     activeNotesRef.current.add(midiNote);
     requestAnimationFrame(() => {
       setActiveNotes(new Set(activeNotesRef.current));
     });
-  }, [synth]);
+
+    // Then handle arpeggiator or direct synth
+    if (arpeggiator.isOn) {
+      setHeldNotes(prev => {
+        const newNotes = [...prev, { note: midiNote, velocity, timestamp: Date.now() }];
+        return newNotes;
+      });
+      if (!arpIntervalRef.current) {
+        startArpeggiator();
+      }
+    } else {
+      synth.noteOn(0, midiNote, velocity);
+    }
+  }, [synth, arpeggiator.isOn, startArpeggiator]);
 
   const handleNoteOff = useCallback((midiNote: number) => {
-    synth.noteOff(0, midiNote); // Channel 0
+    // Always update the active notes set first
     activeNotesRef.current.delete(midiNote);
     requestAnimationFrame(() => {
       setActiveNotes(new Set(activeNotesRef.current));
     });
-  }, [synth]);
 
-  const getMidiNote = (note: string, octave: number) => {
-    const noteIndex = NOTES.indexOf(note);
-    return (octave * 12) + noteIndex + 24; // 24 is C1 in MIDI
-  };
+    // Then handle arpeggiator or direct synth
+    if (arpeggiator.isOn) {
+      if (!arpeggiator.hold) {
+        setHeldNotes(prev => prev.filter(n => n.note !== midiNote));
+      }
+    } else {
+      synth.noteOff(0, midiNote);
+    }
+  }, [synth, arpeggiator.isOn, arpeggiator.hold]);
 
-  // Optimize mouse event handlers
+  // Mouse handlers
   const handleMouseDown = useCallback((midiNote: number) => {
     setIsMouseDown(true);
-    handleNoteOn(midiNote);
+    handleNoteOn(midiNote, 100);
   }, [handleNoteOn]);
 
   const handleMouseUp = useCallback(() => {
     setIsMouseDown(false);
-    activeNotesRef.current.forEach(note => handleNoteOff(note));
+    // Create a copy of the current active notes to avoid modification during iteration
+    const notesToRelease = Array.from(activeNotesRef.current);
+    notesToRelease.forEach(note => handleNoteOff(note));
   }, [handleNoteOff]);
 
   const handleMouseEnter = useCallback((midiNote: number) => {
     if (isMouseDown) {
-      handleNoteOn(midiNote);
+      handleNoteOn(midiNote, 100);
     }
   }, [isMouseDown, handleNoteOn]);
 
   const handleMouseLeave = useCallback((midiNote: number) => {
-    if (activeNotesRef.current.has(midiNote)) {
-      handleNoteOff(midiNote);
-    }
+    handleNoteOff(midiNote);
   }, [handleNoteOff]);
 
-  // Global mouse up handler
+  // MIDI input handlers
+  const handleMidiInput = useCallback((e: any) => {
+    if (e.type === 'noteon') {
+      const note = e.note.number;
+      const velocity = Math.round(e.velocity * 127);
+      handleNoteOn(note, velocity);
+    } else if (e.type === 'noteoff') {
+      const note = e.note.number;
+      handleNoteOff(note);
+    }
+    handleMidiMessage(e);
+  }, [handleNoteOn, handleNoteOff, handleMidiMessage]);
+
+  // Update MIDI input selection
+  useEffect(() => {
+    if (!selectedInput || !WebMidi.enabled) return;
+
+    const input = WebMidi.getInputByName(selectedInput);
+    if (!input) return;
+
+    input.addListener('noteon', handleMidiInput);
+    input.addListener('noteoff', handleMidiInput);
+    input.addListener('controlchange', handleMidiMessage);
+    input.addListener('pitchbend', handleMidiMessage);
+
+    return () => {
+      input.removeListener('noteon');
+      input.removeListener('noteoff');
+      input.removeListener('controlchange');
+      input.removeListener('pitchbend');
+    };
+  }, [selectedInput, handleMidiInput, handleMidiMessage]);
+
+  // Update global mouse handler
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      setIsMouseDown(false);
-      activeNotes.forEach(note => handleNoteOff(note));
+      if (isMouseDown) {
+        setIsMouseDown(false);
+        const notesToRelease = Array.from(activeNotesRef.current);
+        notesToRelease.forEach(note => handleNoteOff(note));
+      }
     };
 
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => {
       window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [activeNotes]);
+  }, [isMouseDown, handleNoteOff]);
 
   // Initialize MIDI
   useEffect(() => {
@@ -703,117 +1008,14 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
     };
   }, []);
 
-  // Optimize MIDI input handling with batched updates
-  const handleMidiNoteOn = useCallback((e: any) => {
-    const note = e.note.number;
-    const velocity = Math.round(e.velocity * 127); // Convert normalized velocity to MIDI range
-    activeNotesRef.current.add(note);
-    setActiveNotes(new Set(activeNotesRef.current));
-    synth.noteOn(0, note, velocity);
-  }, [synth]);
-
-  const handleMidiNoteOff = useCallback((e: any) => {
-    const note = e.note.number;
-    activeNotesRef.current.delete(note);
-    setActiveNotes(new Set(activeNotesRef.current));
-    synth.noteOff(0, note);
-  }, [synth]);
-
-  // Optimize MIDI input selection
-  useEffect(() => {
-    if (!selectedInput || !WebMidi.enabled) return;
-
-    const input = WebMidi.getInputByName(selectedInput);
-    if (!input) return;
-
-    input.addListener('noteon', handleMidiNoteOn);
-    input.addListener('noteoff', handleMidiNoteOff);
-
-    // Control Change events
-    input.addListener('controlchange', e => {
-      if (typeof e.value === 'number' && typeof e.controller.number === 'number') {
-        // Set the flag before updating values
-        isUpdatingFromMidi.current = true;
-        
-        const midiValue = Math.round(e.value * 127);
-        // Update UI values based on CC number
-        switch (e.controller.number) {
-          case CC.MOD_WHEEL:
-            setModulationValue(e.value);
-            synth.controllerChange(0, CC.MOD_WHEEL, midiValue);
-            break;
-          case CC.FILTER_CUTOFF:
-            setFilterCutoff(midiValue);
-            synth.controllerChange(0, CC.FILTER_CUTOFF, midiValue);
-            break;
-          case CC.FILTER_RESONANCE:
-            setFilterResonance(midiValue);
-            synth.controllerChange(0, CC.FILTER_RESONANCE, midiValue);
-            break;
-          case CC.ATTACK_TIME:
-            setAttackTime(midiValue);
-            synth.controllerChange(0, CC.ATTACK_TIME, midiValue);
-            break;
-          case CC.DECAY_TIME:
-            setDecayTime(midiValue);
-            synth.controllerChange(0, CC.DECAY_TIME, midiValue);
-            break;
-          case CC.SUSTAIN_LEVEL:
-            setSustainLevel(midiValue);
-            synth.controllerChange(0, CC.SUSTAIN_LEVEL, midiValue);
-            break;
-          case CC.RELEASE_TIME:
-            setReleaseTime(midiValue);
-            synth.controllerChange(0, CC.RELEASE_TIME, midiValue);
-            break;
-          default:
-            // For any other CC messages, send them directly to the synth
-            synth.controllerChange(0, e.controller.number, midiValue);
-            break;
-        }
-        
-        // Clear the flag after a short delay to ensure state updates are complete
-        setTimeout(() => {
-          isUpdatingFromMidi.current = false;
-        }, 0);
-      }
-    });
-
-    // Pitch Bend events
-    input.addListener('pitchbend', e => {
-      if (typeof e.value === 'number') {
-        // e.value comes in as -1 to +1
-        // Convert to 0-1 range matching physical direction:
-        // -1 (down) = 0 (bottom of wheel)
-        // 0 (center) = 0.5 (middle of wheel)
-        // +1 (up) = 1 (top of wheel)
-        const wheelValue = (e.value + 1) / 2;
-        setPitchBendValue(wheelValue);
-        
-        console.log('Pitch Bend Values:', {
-          rawInputValue: e.value,
-          wheelValue: wheelValue
-        });
-        
-        // Still send full pitch bend value to synth
-        const pitchBendValue = Math.round((e.value + 1) * 8191);
-        synth.pitchWheel(0, 0, pitchBendValue);
-      }
-    });
-
-    return () => {
-      input.removeListener('noteon');
-      input.removeListener('noteoff');
-      input.removeListener('controlchange');
-      input.removeListener('pitchbend');
-    };
-  }, [selectedInput, handleMidiNoteOn, handleMidiNoteOff, synth]);
-
   // Add volume handler
-  const handleVolumeChange = (value: number) => {
+  const handleVolumeChange = useCallback((value: number) => {
     setVolume(value);
-    synth.controllerChange(0, CC.VOLUME, value);
-  };
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.VOLUME, value);
+      handleParameterChange('VOLUME', value, CC.VOLUME);
+    }
+  }, [synth, handleParameterChange]);
 
   // Initialize reverb level to 0 when component mounts
   useEffect(() => {
@@ -826,34 +1028,12 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
     }
   }, [synth]);
 
-  const [currentMidiMessage, setCurrentMidiMessage] = useState<MidiMessage | null>(null);
-
-  // Update MIDI listeners to use the message display
-  useEffect(() => {
-    if (!selectedInput || !WebMidi.enabled) return;
-
-    const input = WebMidi.getInputByName(selectedInput);
-    if (!input) return;
-
-    const handleMidiEvent = (event: any) => {
-      setCurrentMidiMessage({
-        event,
-        timestamp: Date.now()
-      });
-    };
-
-    input.addListener('noteon', handleMidiEvent);
-    input.addListener('noteoff', handleMidiEvent);
-    input.addListener('controlchange', handleMidiEvent);
-    input.addListener('pitchbend', handleMidiEvent);
-
-    return () => {
-      input.removeListener('noteon');
-      input.removeListener('noteoff');
-      input.removeListener('controlchange');
-      input.removeListener('pitchbend');
-    };
-  }, [selectedInput]);
+  const handleArpeggiatorChange = useCallback((changes: Partial<ArpeggiatorState>) => {
+    setArpeggiator(prev => {
+      const newState = { ...prev, ...changes };
+      return newState;
+    });
+  }, []);
 
   const renderKeys = () => {
     const keys: JSX.Element[] = [];
@@ -897,6 +1077,120 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
     return keys;
   };
 
+  // LFO handlers
+  const handleModWheelChange = useCallback((value: number) => {
+    setModWheel(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.MOD_WHEEL, value);
+      handleParameterChange('MOD WHEEL', value, CC.MOD_WHEEL);
+    }
+  }, [synth, handleParameterChange]);
+
+  const handleTremoloChange = useCallback((value: number) => {
+    setTremolo(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.TREMOLO, value);
+      handleParameterChange('TREMOLO', value, CC.TREMOLO);
+    }
+  }, [synth, handleParameterChange]);
+
+  // Effects handlers
+  const handleReverbLevelChange = useCallback((value: number) => {
+    setReverbLevel(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.REVERB_LEVEL, value);
+      handleParameterChange('REVERB', value, CC.REVERB_LEVEL);
+    }
+  }, [synth, handleParameterChange]);
+
+  const handleChorusLevelChange = useCallback((value: number) => {
+    setChorusLevel(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.CHORUS_LEVEL, value);
+      handleParameterChange('CHORUS', value, CC.CHORUS_LEVEL);
+    }
+  }, [synth, handleParameterChange]);
+
+  // Modulation Envelope handlers
+  const handleModEnvToFilterChange = useCallback((value: number) => {
+    setModEnvToFilter(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.MOD_ENV_TO_FILTER, value);
+      handleParameterChange('MOD→FILT', value, CC.MOD_ENV_TO_FILTER);
+    }
+  }, [synth, handleParameterChange]);
+
+  const handleModEnvAttackChange = useCallback((value: number) => {
+    setModEnvAttack(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.MOD_ENV_ATTACK, value);
+      handleParameterChange('MOD ATK', value, CC.MOD_ENV_ATTACK);
+    }
+  }, [synth, handleParameterChange]);
+
+  const handleModEnvDecayChange = useCallback((value: number) => {
+    setModEnvDecay(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.MOD_ENV_DECAY, value);
+      handleParameterChange('MOD DCY', value, CC.MOD_ENV_DECAY);
+    }
+  }, [synth, handleParameterChange]);
+
+  const handleModEnvSustainChange = useCallback((value: number) => {
+    setModEnvSustain(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.MOD_ENV_SUSTAIN, value);
+      handleParameterChange('MOD SUS', value, CC.MOD_ENV_SUSTAIN);
+    }
+  }, [synth, handleParameterChange]);
+
+  const handleModEnvReleaseChange = useCallback((value: number) => {
+    setModEnvRelease(value);
+    if (!isUpdatingFromMidi.current) {
+      synth.controllerChange(0, CC.MOD_ENV_RELEASE, value);
+      handleParameterChange('MOD REL', value, CC.MOD_ENV_RELEASE);
+    }
+  }, [synth, handleParameterChange]);
+
+  // Wheel handlers
+  const handlePitchBend = useCallback((value: number) => {
+    requestAnimationFrame(() => {
+      setPitchBendValue(value);
+      const pitchBendValue = Math.round(value * 16383);
+      synth.pitchWheel(0, 0, pitchBendValue);
+    });
+  }, [synth]);
+
+  const handleModulation = useCallback((value: number) => {
+    requestAnimationFrame(() => {
+      setModulationValue(value);
+      const modulationValue = Math.round(value * 127);
+      synth.controllerChange(0, 1, modulationValue);
+      handleParameterChange('MOD', modulationValue, CC.MOD_WHEEL);
+    });
+  }, [synth, handleParameterChange]);
+
+  const getMidiNote = (note: string, octave: number) => {
+    const noteIndex = NOTES.indexOf(note);
+    return (octave * 12) + noteIndex + 24; // 24 is C1 in MIDI
+  };
+
+  // Add effect to handle arpeggiator state changes
+  useEffect(() => {
+    if (arpeggiator.isOn && heldNotes.length > 0) {
+      startArpeggiator();
+    } else {
+      stopArpeggiator();
+    }
+  }, [arpeggiator.isOn, arpeggiator.rate, arpeggiator.direction, arpeggiator.octaveRange, heldNotes, startArpeggiator, stopArpeggiator]);
+
+  // Clean up arpeggiator on unmount
+  useEffect(() => {
+    return () => {
+      stopArpeggiator();
+    };
+  }, [stopArpeggiator]);
+
   return (
     <div className="piano-container">
       <div className="midi-controls">
@@ -938,6 +1232,11 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
               label="CHORUS"
             />
           </div>
+          <ArpeggiatorControls
+            state={arpeggiator}
+            onChange={handleArpeggiatorChange}
+            onBpmChange={handleBpmChange}
+          />
           <div className="knob-container">
             <Knob
               value={volume}
@@ -949,7 +1248,7 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
           </div>
         </div>
         <div className="logo-section">
-          <img src={islaLogo} alt="Isla Instruments" className="isla-logo" />
+          <img src={islaLogo} alt="Isla" className="isla-logo" />
         </div>
       </div>
 
@@ -958,14 +1257,18 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
           <h4>Filter</h4>
           <div className="knob-row">
             <Knob
-              label="Cutoff"
               value={filterCutoff}
               onChange={handleFilterCutoffChange}
+              min={0}
+              max={127}
+              label="Cutoff"
             />
             <Knob
-              label="Resonance"
               value={filterResonance}
               onChange={handleFilterResonanceChange}
+              min={0}
+              max={127}
+              label="Res"
             />
           </div>
         </div>
@@ -974,24 +1277,32 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
           <h4>Envelope</h4>
           <div className="knob-row">
             <Knob
-              label="A"
               value={attackTime}
               onChange={handleAttackChange}
+              min={0}
+              max={127}
+              label="A"
             />
             <Knob
-              label="D"
               value={decayTime}
               onChange={handleDecayChange}
+              min={0}
+              max={127}
+              label="D"
             />
             <Knob
-              label="S"
               value={sustainLevel}
               onChange={handleSustainChange}
+              min={0}
+              max={127}
+              label="S"
             />
             <Knob
-              label="R"
               value={releaseTime}
               onChange={handleReleaseChange}
+              min={0}
+              max={127}
+              label="R"
             />
           </div>
         </div>
@@ -1049,12 +1360,11 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
 
         <div className="preset-display">
           <LCD 
-            line1={selectedPreset?.presetName || 'No Preset'} 
-            line2={selectedPreset ? `Bank ${selectedPreset.bank} • ${selectedPreset.program}` : ''} 
+            line1={currentMessage.line1}
+            line2={currentMessage.line2}
             width="100%"
             height="100%"
             backlit={true}
-            midiMessage={currentMidiMessage}
           />
         </div>
       </div>

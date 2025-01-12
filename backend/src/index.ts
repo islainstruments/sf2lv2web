@@ -4,7 +4,7 @@ import uploadRouter from './routes/upload';
 import statusRouter from './routes/status';
 
 const app = express();
-const port = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4001;
 
 // Increase payload size limit to 1GB
 app.use(express.json({ limit: '1gb' }));
@@ -25,6 +25,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 }); 

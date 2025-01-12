@@ -10,8 +10,24 @@ export interface SoundFontMetadata {
   date: string;
   comment: string;
   tools: string;
-  presets: BasicPreset[];
+  presets: PresetWithGlobals[];
 }
 
 // Re-export SpessaSynth types we use
 export type { BasicPreset as Preset, Synthetizer }; 
+
+export interface PresetGlobalValues {
+    // Filter
+    cutoff?: number;      // CC 74
+    resonance?: number;   // CC 71
+    
+    // Envelope
+    attack?: number;      // CC 73
+    decay?: number;       // CC 75
+    sustain?: number;     // CC 70
+    release?: number;     // CC 72
+}
+
+export interface PresetWithGlobals extends BasicPreset {
+    globalValues: PresetGlobalValues;
+} 
