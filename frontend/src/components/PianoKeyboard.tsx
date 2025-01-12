@@ -735,35 +735,40 @@ const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ synth, selectedPreset }) 
         // Set the flag before updating values
         isUpdatingFromMidi.current = true;
         
+        const midiValue = Math.round(e.value * 127);
         // Update UI values based on CC number
         switch (e.controller.number) {
           case CC.MOD_WHEEL:
-            console.log('Mod Wheel Values:', {
-              rawInputValue: e.value,
-              wheelValue: e.value  // Remove the inversion
-            });
-            // e.value is already normalized 0-1, use it directly
             setModulationValue(e.value);
-            // Still send full MIDI value to synth
-            synth.controllerChange(0, CC.MOD_WHEEL, Math.round(e.value * 127));
+            synth.controllerChange(0, CC.MOD_WHEEL, midiValue);
             break;
           case CC.FILTER_CUTOFF:
-            setFilterCutoff(Math.round(e.value * 127));
+            setFilterCutoff(midiValue);
+            synth.controllerChange(0, CC.FILTER_CUTOFF, midiValue);
             break;
           case CC.FILTER_RESONANCE:
-            setFilterResonance(Math.round(e.value * 127));
+            setFilterResonance(midiValue);
+            synth.controllerChange(0, CC.FILTER_RESONANCE, midiValue);
             break;
           case CC.ATTACK_TIME:
-            setAttackTime(Math.round(e.value * 127));
+            setAttackTime(midiValue);
+            synth.controllerChange(0, CC.ATTACK_TIME, midiValue);
             break;
           case CC.DECAY_TIME:
-            setDecayTime(Math.round(e.value * 127));
+            setDecayTime(midiValue);
+            synth.controllerChange(0, CC.DECAY_TIME, midiValue);
             break;
           case CC.SUSTAIN_LEVEL:
-            setSustainLevel(Math.round(e.value * 127));
+            setSustainLevel(midiValue);
+            synth.controllerChange(0, CC.SUSTAIN_LEVEL, midiValue);
             break;
           case CC.RELEASE_TIME:
-            setReleaseTime(Math.round(e.value * 127));
+            setReleaseTime(midiValue);
+            synth.controllerChange(0, CC.RELEASE_TIME, midiValue);
+            break;
+          default:
+            // For any other CC messages, send them directly to the synth
+            synth.controllerChange(0, e.controller.number, midiValue);
             break;
         }
         
