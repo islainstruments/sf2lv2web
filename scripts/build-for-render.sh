@@ -72,8 +72,34 @@ cd ..
 # Build backend
 echo "Building backend..."
 cd backend
+
+# Make sure package.json has the right dependencies
+echo "Checking for required dependencies..."
+if ! grep -q '"uuid":' package.json; then
+  echo "Adding missing uuid dependency..."
+  # Use jq if available, or simple sed pattern otherwise
+  if command -v jq > /dev/null; then
+    jq '.dependencies.uuid = "^9.0.0"' package.json > package.json.tmp && mv package.json.tmp package.json
+  else
+    sed -i -e 's/"dependencies": {/"dependencies": {\n    "uuid": "^9.0.0",/' package.json
+  fi
+fi
+
+# Install dependencies including uuid
+echo "Installing backend dependencies..."
 npm ci
+
+# Try building normally
+echo "Building backend with TypeScript..."
 npm run build
+
+# If the build fails, try installing missing types
+if [ $? -ne 0 ]; then
+  echo "Build failed, installing additional type definitions..."
+  npm install --save @types/uuid
+  npm run build
+fi
+
 cd ..
 
 # Create public directory in backend
