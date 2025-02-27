@@ -15,10 +15,19 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:4001',
         changeOrigin: true,
+        secure: false
       },
     }
   },
   optimizeDeps: {
     include: ['sfumato', 'lodash']
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    minify: true
+  },
+  define: {
+    'process.env.API_BASE': JSON.stringify(process.env.API_BASE || '/api')
   }
 })

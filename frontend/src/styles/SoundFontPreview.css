@@ -4,6 +4,18 @@
   padding: 0;
 }
 
+.soundfont-title {
+  color: #fff;
+  margin: 0 0 20px 0;
+  font-size: 28px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #fff, #aaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
 .metadata-section {
   margin-bottom: 20px;
   width: 100%;

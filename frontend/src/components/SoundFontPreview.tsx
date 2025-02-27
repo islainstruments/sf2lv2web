@@ -83,16 +83,7 @@ const SoundFontPreview: React.FC<SoundFontPreviewProps> = ({ metadata, soundFont
 
     return (
         <div className="soundfont-preview">
-            <div className="metadata-section">
-                <h2>SoundFont Information</h2>
-                <div className="metadata-details">
-                    <div>Name: {displayMetadata.name}</div>
-                    <div>Version: {displayMetadata.version.major}.{displayMetadata.version.minor}</div>
-                    <div>Date: {displayMetadata.date}</div>
-                    <div>Comment: {displayMetadata.comment}</div>
-                    <div>Tools: {displayMetadata.tools}</div>
-                </div>
-            </div>
+            <h2 className="soundfont-title">{displayMetadata.name}</h2>
 
             <div className="keyboard-section">
                 <PianoKeyboard 

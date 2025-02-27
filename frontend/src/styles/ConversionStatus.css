@@ -1,62 +1,115 @@
 .conversion-status {
-  width: 100%;
-  max-width: 100%;
-  background: var(--isla-card-background);
-  padding: 20px;
+  background: rgba(26, 26, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  margin-bottom: 1rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  backdrop-filter: blur(10px);
 }
 
 .status-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
 .status-header h3 {
   margin: 0;
-  color: var(--isla-heading);
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.retry-button {
-  background: var(--isla-accent);
-  color: var(--isla-white);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
+  color: #ffffff;
+  font-family: var(--font-primary);
   font-weight: 500;
-  transition: background 0.3s ease;
-}
-
-.retry-button:hover {
-  background: var(--isla-accent-hover);
 }
 
 .progress-bar {
-  width: 100%;
-  background: var(--isla-background-hover);
+  background: rgba(255, 255, 255, 0.1);
   height: 4px;
   border-radius: 2px;
   overflow: hidden;
+  margin: 1rem 0;
+  position: relative;
 }
 
 .progress-fill {
+  background: var(--accent-color);
   height: 100%;
-  background: var(--isla-accent);
-  transition: width 0.3s ease;
+  border-radius: 2px;
+  transition: width 0.3s ease-out;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, var(--accent-glow));
+  filter: blur(2px);
 }
 
 .error-message {
-  color: var(--isla-error);
-  margin: 10px 0 0;
-  padding: 10px;
-  background: var(--isla-error-background);
+  color: var(--accent-color);
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.action-buttons-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.action-button {
+  background: var(--accent-color);
+  color: white;
+  border: none;
   border-radius: 4px;
-  width: 100%;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.action-button:hover {
+  background: #ff5555;
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.action-button:disabled {
+  background: #666;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.action-button.download {
+  background: #2a2a2a;
+  border: 1px solid var(--accent-color);
+}
+
+.action-button.download:hover {
+  background: #3a3a3a;
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.retry-button {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: rgba(255, 68, 68, 0.1);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .download {
@@ -83,4 +136,16 @@
 
 .download-button:hover {
   background: var(--isla-accent-hover);
+}
+
+.action-button.browse {
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.action-button.browse:hover {
+  background: #3a3a3a;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 } 

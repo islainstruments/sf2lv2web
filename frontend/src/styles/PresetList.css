@@ -45,8 +45,6 @@
 
 .presets-list {
   width: 100%;
-  max-height: 600px;
-  overflow-y: auto;
 }
 
 .preset-row {
@@ -94,7 +92,9 @@
   margin-left: 4px;
 }
 
+/* Since we're not using scrollbars anymore, we can remove or comment out these styles */
 /* Scrollbar Styles */
+/*
 .presets-list::-webkit-scrollbar {
   width: 8px;
 }
@@ -110,4 +110,5 @@
 
 .presets-list::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 68, 68, 0.2);
-} 
+}
+*/ 

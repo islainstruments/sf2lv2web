@@ -1,6 +1,123 @@
-# SF2LV2 Web
+# SF2LV2-WEB
 
-A web service that allows users to convert SoundFont (.sf2) files into LV2 plugins directly from their web browser. This is the web version of [SF2LV2](https://github.com/islainstruments/SF2LV2).
+A web service that converts SoundFont (.sf2) files into LV2 plugins through a containerized build process.
+
+## System Architecture
+
+### Components
+1. **Frontend** (React)
+   - Handles file upload UI
+   - Provides soundfont preview
+   - Manages download of built plugins
+
+2. **Backend** (Node.js)
+   - Manages file uploads
+   - Coordinates with Docker builder
+   - Handles plugin downloads
+
+3. **Builder** (Docker)
+   - Cross-compiles plugins for ARM64
+   - Contains FluidSynth and LV2 dependencies
+   - Generates plugin binaries and metadata
+
+## File Flow
+
+1. **Upload Stage**
+   ```
+   User Upload → Frontend → Backend → /backend/plugins/uploads/
+   ```
+
+2. **Build Stage**
+   ```
+   /backend/plugins/uploads/ → Docker Volume → /input/
+   ↓
+   Docker builds plugin in /build/sf2lv2/
+   ↓
+   Output saved to /output/ → /backend/plugins/temp/
+   ```
+
+3. **Download Stage**
+   ```
+   /backend/plugins/temp/ → Backend → Frontend → User Download
+   ```
+
+## Directory Structure
+```
+.
+├── frontend/              # React frontend
+├── backend/
+│   └── plugins/
+│       ├── uploads/       # Uploaded soundfonts
+│       └── temp/         # Built plugins
+├── docker/
+│   ├── Dockerfile        # Builder image definition
+│   └── build.sh          # Build process script
+└── sf2lv2/              # Plugin source code
+    ├── src/             # C source files
+    └── Makefile         # Build system
+```
+
+## Build Process
+
+1. **File Upload**
+   - Frontend sends file to backend
+   - Backend stores in `/backend/plugins/uploads/`
+
+2. **Build Trigger**
+   - Backend executes Docker builder
+   - Mounts:
+     - `/backend/plugins/uploads/` → `/input/`
+     - `/backend/plugins/temp/` → `/output/`
+     - `/sf2lv2/` → `/build/sf2lv2/`
+
+3. **Plugin Generation**
+   - Builder runs `/build/build.sh`
+   - Compiles using sf2lv2 source
+   - Generates LV2 bundle
+   - Creates ZIP archive in `/output/`
+
+4. **Download**
+   - Backend serves ZIP from `/backend/plugins/temp/`
+   - Frontend provides download link
+
+## Volume Mappings
+
+From docker-compose.yml:
+```yaml
+volumes:
+  - ./sf2lv2:/build/sf2lv2        # Plugin source
+  - ./backend/plugins/uploads:/input    # Soundfont input
+  - ./backend/plugins/temp:/output      # Built plugin output
+```
+
+## Build Environment
+
+The Docker builder:
+1. Uses Debian Bookworm base
+2. Cross-compiles for ARM64 (aarch64)
+3. Includes:
+   - FluidSynth 2.4.1
+   - LV2 development files
+   - Cross-compilation toolchain
+
+## Development Setup
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Build Docker image:
+   ```bash
+   docker-compose build
+   ```
+
+3. Start services:
+   ```bash
+   docker-compose up
+   ```
+
+4. Access frontend at `http://localhost:3000`
 
 ## Overview
 
@@ -59,10 +176,21 @@ The service handles all the complexity of plugin compilation, dependency managem
 ## Project Structure
 
 ```
-sf2lv2-web/
-├── frontend/    # React application for file upload and download
-├── backend/     # Node.js server handling conversion requests
-└── docker/      # Build environment container
+SF2LV2-WEB/
+├── sf2lv2/           # Main plugin source code
+│   ├── src/          # Plugin source files
+│   └── Makefile      # Build system
+│
+├── docker/           # Docker build environment
+│   ├── Dockerfile    # Cross-compilation setup
+│   └── build.sh      # Build process script
+│
+├── backend/          # Node.js backend
+│   └── plugins/      # Plugin build output
+│       ├── temp/     # Temporary files
+│       └── uploads/  # Soundfont uploads
+│
+└── frontend/         # React frontend
 ```
 
 ## Development Setup

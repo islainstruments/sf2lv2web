@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sf2lv2-web
+    env: node
+    buildCommand: chmod +x ./scripts/build-for-render.sh && ./scripts/build-for-render.sh
+    startCommand: cd backend && node dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    autoDeploy: true 

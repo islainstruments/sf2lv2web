@@ -1,23 +1,46 @@
 import React from 'react';
 import { ConversionStatus as Status } from '../types';
+import '../styles/ConversionStatus.css';
 
 interface ConversionStatusProps {
   status: Status;
   progress: number;
   error?: string;
   onRetry?: () => void;
+  onCreatePlugin?: () => void;
+  onDownload?: () => void;
+  pluginUrl?: string;
 }
 
-const statusMessages = {
+const statusMessages: Record<Status, string> = {
+  idle: 'Ready to create LV2 plugin',
   uploading: 'Uploading SoundFont file...',
+  processing: 'Processing SoundFont file...',
   validating: 'Validating file format...',
   building: 'Building LV2 plugin...',
   packaging: 'Packaging plugin files...',
-  complete: 'Conversion complete!',
-  error: 'Conversion failed',
+  ready: 'Ready to create LV2 plugin',
+  complete: 'Plugin ready for download!',
+  failed: 'Build process failed',
+  error: 'Conversion failed'
 };
 
-export function ConversionStatus({ status, progress, error, onRetry }: ConversionStatusProps) {
+export function ConversionStatus({ 
+  status, 
+  progress, 
+  error, 
+  onRetry,
+  onCreatePlugin,
+  onDownload,
+  pluginUrl 
+}: ConversionStatusProps) {
+  const isProcessing = ['uploading', 'validating', 'building', 'packaging'].includes(status);
+  const showProgress = isProcessing;
+  const showCreateButton = status === 'ready';
+  const showDownloadButton = status === 'complete' && pluginUrl;
+  // Show browse button when we're showing Create or Download buttons
+  const showBrowseButton = (showCreateButton || showDownloadButton) && onRetry;
+
   return (
     <div className="conversion-status">
       <div className="status-header">
@@ -29,7 +52,7 @@ export function ConversionStatus({ status, progress, error, onRetry }: Conversio
         )}
       </div>
 
-      {status !== 'error' && status !== 'complete' && (
+      {showProgress && (
         <div className="progress-bar">
           <div 
             className="progress-fill"
@@ -39,6 +62,35 @@ export function ConversionStatus({ status, progress, error, onRetry }: Conversio
       )}
 
       {error && <p className="error-message">{error}</p>}
+
+      <div className="action-buttons-container">
+        {showBrowseButton && (
+          <button 
+            className="action-button browse"
+            onClick={onRetry}
+          >
+            Browse New SoundFont
+          </button>
+        )}
+
+        {showCreateButton && onCreatePlugin && (
+          <button 
+            className="action-button"
+            onClick={onCreatePlugin}
+          >
+            Create LV2 Plugin
+          </button>
+        )}
+      </div>
+
+      {showDownloadButton && onDownload && (
+        <button 
+          className="action-button download"
+          onClick={onDownload}
+        >
+          Download Plugin
+        </button>
+      )}
     </div>
   );
 } 

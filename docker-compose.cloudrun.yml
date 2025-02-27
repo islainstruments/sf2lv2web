@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./temp:/app/backend/plugins/temp
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - FRONTEND_URL=${FRONTEND_URL:-https://your-domain.com} # Will be set during deploy
+
+  builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./sf2lv2:/build/sf2lv2
+      - ./temp:/input
+      - ./temp:/output
+    environment:
+      - CROSS_COMPILE=aarch64-linux-gnu-
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
+      - AR=aarch64-linux-gnu-ar
+      - LD=aarch64-linux-gnu-ld
+      - STRIP=aarch64-linux-gnu-strip
+      - BUILD_DIR=/build
+    restart: unless-stopped 

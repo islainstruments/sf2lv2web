@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./backend:/app
+      - ./backend/plugins/uploads:/app/uploads
+      - ./backend/plugins/temp:/app/temp
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - builder
+
+  builder:
+    build: 
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./sf2lv2:/build/sf2lv2
+      - ./backend/plugins/uploads:/input
+      - ./backend/plugins/temp:/output
+    environment:
+      - CROSS_COMPILE=aarch64-linux-gnu-
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
+      - AR=aarch64-linux-gnu-ar
+      - LD=aarch64-linux-gnu-ld
+      - STRIP=aarch64-linux-gnu-strip
+      - BUILD_DIR=/build
+    restart: unless-stopped 

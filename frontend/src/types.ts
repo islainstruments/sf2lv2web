@@ -1,5 +1,18 @@
 import { BasicPreset, Synthetizer } from 'spessasynth_lib';
 
+// Conversion status type
+export type ConversionStatus = 
+  | 'idle'
+  | 'uploading'
+  | 'processing'
+  | 'validating'
+  | 'building'
+  | 'packaging'
+  | 'ready'
+  | 'complete'
+  | 'failed'
+  | 'error';
+
 // Basic types for SoundFont metadata
 export interface SoundFontMetadata {
   version: {

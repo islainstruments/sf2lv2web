@@ -1,4 +1,4 @@
-import { ConversionJob, SoundFontMetadata } from '../types';
+import { Job as ConversionJob, SoundFontMetadata } from '../types';
 
 // In-memory store for conversion jobs
 const jobs = new Map<string, ConversionJob>();
@@ -10,6 +10,10 @@ export function createJob(metadata: SoundFontMetadata): ConversionJob {
     status: 'validating',
     progress: 0,
     metadata,
+    soundfontPath: metadata.name,
+    pluginName: metadata.name.replace(/\.sf2$/, ''),
+    created: new Date(),
+    updated: new Date()
   };
   jobs.set(jobId, job);
   return job;

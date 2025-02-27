@@ -48,4 +48,30 @@ export interface SoundFontMetadata {
   presets: Preset[];
   instruments: Instrument[];
   samples: Sample[];
+}
+
+export type JobStatus = 
+  | 'idle'
+  | 'pending'
+  | 'uploading'
+  | 'validating'
+  | 'building'
+  | 'packaging'
+  | 'complete'
+  | 'failed'
+  | 'error';
+
+export interface Job {
+  id: string;
+  status: JobStatus;
+  soundfontPath: string;
+  pluginName: string;
+  userId?: string;
+  created: Date;
+  updated: Date;
+  error?: string;
+  output?: string;
+  progress?: number;
+  outputPath?: string;
+  metadata?: SoundFontMetadata;
 } 

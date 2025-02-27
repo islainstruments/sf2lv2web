@@ -1,4 +1,14 @@
-node_modules/
+# Prevent duplicate sf2lv2 copies
+docker/sf2lv2/
+
+# Build artifacts
+**/build/
+**/dist/
+**/plugins/temp/
+**/plugins/uploads/
+
+# Node
+**/node_modules/
 .DS_Store
 .env
 dist/
