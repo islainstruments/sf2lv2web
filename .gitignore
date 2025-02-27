@@ -14,63 +14,15 @@ docker/sf2lv2/
 dist/
 build/
 backend/uploads/
-*.sf2
-
-# Embedded git repo
-sf2lv2/
-
-# Build artifacts
-sf2lv2.tar.gz
-sf2lv2-web-deploy.tar.gz
-backend.tar
-builder.tar
-backend-deploy.zip
-deploy-backend/
-
-# Node modules
-node_modules/
-npm-debug.log
-yarn-error.log
-.pnpm-debug.log
-
-# Build directories
-dist/
-build/
-out/
-frontend/dist/
-backend/dist/
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Operating System files
-.DS_Store
-Thumbs.db
-
-# Editor directories and files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Temporary files
-*.log
-*.tmp
-.cache/
-
-# Testing
-coverage/
-
-# Backend uploads and temporary files
-backend/uploads/
 backend/temp/
 *.sf2
 
-# Build artifacts and large files
-*.tar
-*.tar.gz
+# sf2lv2 specific artifacts
+sf2lv2/build/
+sf2lv2/*.so
+sf2lv2/*.lv2/
 *.zip
+
+# Don't ignore the deployment script
+!deploy.sh
+!test-docker-build.sh

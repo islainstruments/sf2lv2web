@@ -20,7 +20,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['sfumato', 'lodash']
+    include: ['lodash']
   },
   build: {
     outDir: 'dist',

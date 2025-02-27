@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
 import uploadRouter from './routes/upload';
 import statusRouter from './routes/status';
 import buildRouter from './routes/build';
@@ -54,26 +53,6 @@ app.use('/download', express.static('uploads'));
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
-
-// Serve frontend static files in production
-if (process.env.NODE_ENV === 'production') {
-  // Serve built frontend files from 'public' directory
-  app.use(express.static(path.join(__dirname, '../public')));
-  
-  // Serve worklet processor file at the root
-  app.get('/worklet_processor.min.js', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/worklet_processor.min.js'));
-  });
-  
-  // For any other request, serve the index.html
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(__dirname, '../public/index.html'));
-    } else {
-      res.status(404).json({ error: 'Not found' });
-    }
-  });
-}
 
 // Create server with custom settings
 const server = app.listen(PORT, () => {
