@@ -13,11 +13,12 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:4001',
+        target: 'https://api.islainstruments.com',
         changeOrigin: true,
         secure: false
       },
-    }
+    },
+    allowedHosts: ['sf2lv2.islainstruments.com'],  // Add this line to allow the host
   },
   optimizeDeps: {
     include: ['lodash']

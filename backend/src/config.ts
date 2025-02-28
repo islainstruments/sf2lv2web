@@ -2,8 +2,8 @@ export const config = {
   port: process.env.PORT || 4001,
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? [process.env.FRONTEND_URL || 'https://your-domain.com']  // Replace with your domain
-      : ['http://localhost:3000', 'http://localhost:5173'],
+      ? [process.env.FRONTEND_URL || 'https://sf2lv2.islainstruments.com']  // Replace with your domain
+      : ['http://localhost:3000', 'http://localhost:5173', '*'],
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Accept'],
     credentials: true,

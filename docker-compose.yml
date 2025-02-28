@@ -3,16 +3,21 @@ services:
     build: ./backend
     ports:
       - "4001:4001"
+    privileged: true
     volumes:
       - ./backend:/app
       - ./backend/plugins/uploads:/app/uploads
       - ./backend/plugins/temp:/app/temp
+      - /var/run/docker.sock:/var/run/docker.sock
+
     environment:
       - NODE_ENV=development
+      - DOCKER_HOST=unix:///var/run/docker.sock
     depends_on:
       - builder
 
   builder:
+    image: sf2lv2-builder:latest
     build: 
       context: .
       dockerfile: docker/Dockerfile
