@@ -49,7 +49,7 @@ app.use('/api/download', downloadRouter);
 // Serve static files from uploads directory
 app.use('/download', express.static('uploads'));
 
-// Health check endpoint
+// Health check endpoint 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
