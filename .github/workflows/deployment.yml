@@ -5,25 +5,34 @@ on:
     branches:
       - main
     paths:
-      - 'frontend/**'  
-      - 'backend/**'   
+      - 'frontend/**'
+      - 'backend/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'frontend/**'  
-      - 'backend/**'   
+      - 'frontend/**'
+      - 'backend/**'
 
 jobs:
   # Frontend Build and Run Job
   frontend:
     runs-on: self-hosted  
-    if: ${{ contains(github.event.head_commit.message, 'frontend') }}  # Check if the commit message contains 'frontend'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Check if frontend files were modified
+        id: frontend_changed
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^frontend/"; then
+            echo "frontend changed=true" >> $GITHUB_ENV
+          else
+            echo "frontend changed=false" >> $GITHUB_ENV
+          fi
         
       - name: Build Frontend with Docker Compose
+        if: env.frontend_changed == 'true'
         run: |
           cd frontend
           docker-compose build
@@ -36,13 +45,22 @@ jobs:
 
   # Backend Build and Run Job
   backend:
-    runs-on: self-hosted  # Use the self-hosted runner
-    if: ${{ contains(github.event.head_commit.message, 'backend') }}  # Check if the commit message contains 'backend'
+    runs-on: self-hosted  
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        
+
+      - name: Check if backend files were modified
+        id: backend_changed
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^backend/"; then
+            echo "backend changed=true" >> $GITHUB_ENV
+          else
+            echo "backend changed=false" >> $GITHUB_ENV
+          fi
+
       - name: Install Backend Dependencies and Build
+        if: env.backend_changed == 'true'
         run: |
           cd backend
           npm install
@@ -50,6 +68,7 @@ jobs:
           cd ..
         
       - name: Restart Backend Service using systemd
+        if: env.backend_changed == 'true'
         run: |
           sudo systemctl restart backend.service
           sudo systemctl status backend.service
