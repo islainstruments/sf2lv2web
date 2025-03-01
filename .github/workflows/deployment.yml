@@ -25,7 +25,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ssh-strict: true
           persist-credentials: true
-          clean: true
+          clean: false  # Don't clean the working directory to avoid removing untracked files
           fetch-depth: 1
           lfs: false
           submodules: false
@@ -38,11 +38,11 @@ jobs:
 
       - name: Build Frontend with Docker Compose
         run: |
-          cd $GITHUB_WORKSPACE/frontend  # Using $GITHUB_WORKSPACE as the working directory
+          cd $GITHUB_WORKSPACE/frontend
           docker compose build --no-cache
           docker compose up -d
           docker ps -a
-          cd $GITHUB_WORKSPACE  # Return to the workspace root
+          cd $GITHUB_WORKSPACE
 
       - name: Cleanup unused Docker images
         run: |
@@ -58,7 +58,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ssh-strict: true
           persist-credentials: true
-          clean: true
+          clean: false  # Don't clean the working directory to avoid removing untracked files
           fetch-depth: 1
           lfs: false
           submodules: false
@@ -72,35 +72,25 @@ jobs:
       - name: Check if backend files were modified
         id: backend_changed
         run: |
-          # Check for any changes in the 'backend' directory
           if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^backend/"; then
             echo "backend_changed=true" >> $GITHUB_ENV
           else
             echo "backend_changed=false" >> $GITHUB_ENV
           fi
 
-      - name: Cache Backend Dist Folder
-        if: env.backend_changed == 'true'
-        uses: actions/cache@v2
-        with:
-          path: backend/dist  # Path to backend dist folder
-          key: backend-dist-${{ runner.os }}-${{ hashFiles('backend/**') }}  # Cache key
-          restore-keys: |
-            backend-dist-${{ runner.os }}-
-
       - name: Install Backend Dependencies and Build
         if: env.backend_changed == 'true'
         run: |
-          cd $GITHUB_WORKSPACE/backend  # Use the workspace path for backend
+          cd $GITHUB_WORKSPACE/backend
           npm install
           npm run build
-          cd $GITHUB_WORKSPACE  # Return to the workspace root
+          cd $GITHUB_WORKSPACE
 
       - name: Restart Backend Service with PM2
         if: env.backend_changed == 'true'
         run: |
-          cd $GITHUB_WORKSPACE/backend  # Go to the backend directory
-          pm2 restart sf2lv2-backend  # Restart the app with PM2
+          cd $GITHUB_WORKSPACE/backend
+          pm2 restart sf2lv2-backend  # Restart the backend service
 
       - name: Check PM2 Status
         if: env.backend_changed == 'true'
