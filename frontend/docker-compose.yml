@@ -6,5 +6,5 @@ services:
     restart: always
     container_name: node-app
     ports:
-      - "3000:3000"  # Expose port 3000 on the host and containerxy
+      - "3000:3000" 
 
