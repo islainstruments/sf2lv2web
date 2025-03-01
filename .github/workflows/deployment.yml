@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CICD Pipeline
 
 on:
   push:
@@ -17,7 +17,7 @@ on:
 jobs:
   # Frontend Build and Run Job
   frontend:
-    runs-on: self-hosted  
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -26,26 +26,27 @@ jobs:
         id: frontend_changed
         run: |
           if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^frontend/"; then
-            echo "frontend changed=true" >> $GITHUB_ENV
+            echo "frontend_changed=true" >> $GITHUB_ENV
           else
-            echo "frontend changed=false" >> $GITHUB_ENV
+            echo "frontend_changed=false" >> $GITHUB_ENV
           fi
-        
+
       - name: Build Frontend with Docker Compose
         if: env.frontend_changed == 'true'
         run: |
           cd frontend
           docker-compose build
-          docker-compose up -d  
+          docker-compose up -d
           cd ..
-        
+
       - name: Cleanup unused Docker images
+        if: env.frontend_changed == 'true'
         run: |
           docker image prune -f 
 
   # Backend Build and Run Job
   backend:
-    runs-on: self-hosted  
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -54,9 +55,9 @@ jobs:
         id: backend_changed
         run: |
           if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^backend/"; then
-            echo "backend changed=true" >> $GITHUB_ENV
+            echo "backend_changed=true" >> $GITHUB_ENV
           else
-            echo "backend changed=false" >> $GITHUB_ENV
+            echo "backend_changed=false" >> $GITHUB_ENV
           fi
 
       - name: Install Backend Dependencies and Build
@@ -66,7 +67,7 @@ jobs:
           npm install
           npm run build
           cd ..
-        
+
       - name: Restart Backend Service using systemd
         if: env.backend_changed == 'true'
         run: |
