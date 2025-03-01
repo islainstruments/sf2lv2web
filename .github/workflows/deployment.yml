@@ -79,6 +79,15 @@ jobs:
             echo "backend_changed=false" >> $GITHUB_ENV
           fi
 
+      - name: Cache Backend Dist Folder
+        if: env.backend_changed == 'true'
+        uses: actions/cache@v2
+        with:
+          path: backend/dist  # Path to backend dist folder
+          key: backend-dist-${{ runner.os }}-${{ hashFiles('backend/**') }}  # Cache key
+          restore-keys: |
+            backend-dist-${{ runner.os }}-
+
       - name: Install Backend Dependencies and Build
         if: env.backend_changed == 'true'
         run: |
