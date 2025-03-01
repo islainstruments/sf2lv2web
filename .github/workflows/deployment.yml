@@ -31,26 +31,17 @@ jobs:
           submodules: false
           set-safe-directory: true
 
-      - name: Move repository to correct directory
-        run: |
-          mv $GITHUB_WORKSPACE /home/ubuntu/sf2lv2web/sf2lv2web
-          cd /home/ubuntu/sf2lv2web/sf2lv2web  # Change directory to where the repo is moved
-
-      - name: Pull latest changes
-        run: |
-          git pull origin main  # Ensure we have the latest changes from the remote repository
-
       - name: Debug current directory
         run: |
-          echo "Current Directory: $(pwd)"
-          ls -l
+          echo "Workspace Directory: $GITHUB_WORKSPACE"
+          ls -l $GITHUB_WORKSPACE
 
       - name: Build Frontend with Docker Compose
         run: |
-          cd /home/ubuntu/sf2lv2web/sf2lv2web/frontend  # Absolute path to frontend
+          cd $GITHUB_WORKSPACE/frontend  # Using $GITHUB_WORKSPACE as the working directory
           docker-compose build
           docker-compose up -d
-          cd /home/ubuntu/sf2lv2web/sf2lv2web  # Go back to root directory
+          cd $GITHUB_WORKSPACE  # Return to the workspace root
 
       - name: Cleanup unused Docker images
         run: |
@@ -72,14 +63,10 @@ jobs:
           submodules: false
           set-safe-directory: true
 
-      - name: Move repository to correct directory
+      - name: Debug current directory
         run: |
-          mv $GITHUB_WORKSPACE /home/ubuntu/sf2lv2web/sf2lv2web
-          cd /home/ubuntu/sf2lv2web/sf2lv2web 
-
-      - name: Pull latest changes
-        run: |
-          git pull origin main  
+          echo "Workspace Directory: $GITHUB_WORKSPACE"
+          ls -l $GITHUB_WORKSPACE
 
       - name: Check if backend files were modified
         id: backend_changed
@@ -93,10 +80,10 @@ jobs:
       - name: Install Backend Dependencies and Build
         if: env.backend_changed == 'true'
         run: |
-          cd /home/ubuntu/sf2lv2web/sf2lv2web/backend 
+          cd $GITHUB_WORKSPACE/backend  # Use the workspace path for backend
           npm install
           npm run build
-          cd /home/ubuntu/sf2lv2web/sf2lv2web 
+          cd $GITHUB_WORKSPACE  # Return to the workspace root
 
       - name: Restart Backend Service using systemd
         if: env.backend_changed == 'true'
