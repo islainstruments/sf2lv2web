@@ -41,6 +41,7 @@ jobs:
           cd $GITHUB_WORKSPACE/frontend  # Using $GITHUB_WORKSPACE as the working directory
           docker-compose build
           docker-compose up -d
+          docker ps -a
           cd $GITHUB_WORKSPACE  # Return to the workspace root
 
       - name: Cleanup unused Docker images
