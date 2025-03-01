@@ -1,4 +1,4 @@
-name: CICD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -21,11 +21,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          path: /home/ubuntu/sf2lv2web
+          repository: islainstruments/sf2lv2web
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ssh-strict: true
+          persist-credentials: true
+          clean: true
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+          set-safe-directory: true
+
+      - name: Move repository to correct directory
+        run: |
+          mv $GITHUB_WORKSPACE /home/ubuntu/sf2lv2web/sf2lv2web
+          cd /home/ubuntu/sf2lv2web/sf2lv2web  # Change directory to where the repo is moved
 
       - name: Pull latest changes
         run: |
-          git pull origin main
+          git pull origin main  # Ensure we have the latest changes from the remote repository
 
       - name: Debug current directory
         run: |
@@ -34,10 +47,10 @@ jobs:
 
       - name: Build Frontend with Docker Compose
         run: |
-          cd /home/ubuntu/sf2lv2web/frontend  # Absolute path to frontend
+          cd /home/ubuntu/sf2lv2web/sf2lv2web/frontend  # Absolute path to frontend
           docker-compose build
           docker-compose up -d
-          cd /home/ubuntu/sf2lv2web  # Go back to root directory
+          cd /home/ubuntu/sf2lv2web/sf2lv2web  # Go back to root directory
 
       - name: Cleanup unused Docker images
         run: |
@@ -49,11 +62,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          path: /home/ubuntu/sf2lv2web  # Set the correct checkout path here
+          repository: islainstruments/sf2lv2web
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ssh-strict: true
+          persist-credentials: true
+          clean: true
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+          set-safe-directory: true
+
+      - name: Move repository to correct directory
+        run: |
+          mv $GITHUB_WORKSPACE /home/ubuntu/sf2lv2web/sf2lv2web
+          cd /home/ubuntu/sf2lv2web/sf2lv2web 
 
       - name: Pull latest changes
         run: |
-          git pull origin main  # Ensure we have the latest changes from the remote repository
+          git pull origin main  
 
       - name: Check if backend files were modified
         id: backend_changed
@@ -67,10 +93,10 @@ jobs:
       - name: Install Backend Dependencies and Build
         if: env.backend_changed == 'true'
         run: |
-          sudo cd /home/ubuntu/sf2lv2web/backend  
-          sudo npm install
-          sudo npm run build
-          cd /home/ubuntu/sf2lv2web 
+          cd /home/ubuntu/sf2lv2web/sf2lv2web/backend 
+          npm install
+          npm run build
+          cd /home/ubuntu/sf2lv2web/sf2lv2web 
 
       - name: Restart Backend Service using systemd
         if: env.backend_changed == 'true'
