@@ -15,7 +15,7 @@ app.use(express.raw({ limit: '1gb' }));
 
 // Enable CORS with specific configuration
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'], // Allow both Vite and CRA default ports
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://sf2lv2.islainstruments.com'], // Allow both Vite and CRA default ports
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Accept'],
   credentials: true,
@@ -50,7 +50,7 @@ app.use('/api/download', downloadRouter);
 app.use('/download', express.static('uploads'));
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/healthz', (req, res) => {
   res.json({ status: 'ok' });
 });
 
