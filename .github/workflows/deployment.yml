@@ -15,41 +15,45 @@ on:
       - 'backend/**'
 
 jobs:
-  # Frontend Build and Run Job
   frontend:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          path: /home/ubuntu/sf2lv2web
 
-      - name: Check if frontend files were modified
-        id: frontend_changed
+      - name: Pull latest changes
         run: |
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^frontend/"; then
-            echo "frontend_changed=true" >> $GITHUB_ENV
-          else
-            echo "frontend_changed=false" >> $GITHUB_ENV
-          fi
+          git pull origin main
+
+      - name: Debug current directory
+        run: |
+          echo "Current Directory: $(pwd)"
+          ls -l
 
       - name: Build Frontend with Docker Compose
-        if: env.frontend_changed == 'true'
         run: |
-          cd frontend
+          cd /home/ubuntu/sf2lv2web/frontend  # Absolute path to frontend
           docker-compose build
           docker-compose up -d
-          cd ..
+          cd /home/ubuntu/sf2lv2web  # Go back to root directory
 
       - name: Cleanup unused Docker images
-        if: env.frontend_changed == 'true'
         run: |
-          docker image prune -f 
+          sudo docker image prune -f
 
-  # Backend Build and Run Job
   backend:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          path: /home/ubuntu/sf2lv2web  # Set the correct checkout path here
+
+      - name: Pull latest changes
+        run: |
+          git pull origin main  # Ensure we have the latest changes from the remote repository
 
       - name: Check if backend files were modified
         id: backend_changed
@@ -63,10 +67,10 @@ jobs:
       - name: Install Backend Dependencies and Build
         if: env.backend_changed == 'true'
         run: |
-          cd backend
-          npm install
-          npm run build
-          cd ..
+          sudo cd /home/ubuntu/sf2lv2web/backend  
+          sudo npm install
+          sudo npm run build
+          cd /home/ubuntu/sf2lv2web 
 
       - name: Restart Backend Service using systemd
         if: env.backend_changed == 'true'
