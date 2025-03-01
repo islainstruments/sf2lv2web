@@ -50,7 +50,7 @@ app.use('/api/download', downloadRouter);
 app.use('/download', express.static('uploads'));
 
 // Health check endpoint 
-app.get('/api/health', (req, res) => {
+app.get('/api/healthzz', (req, res) => {
   res.json({ status: 'ok' });
 });
 
