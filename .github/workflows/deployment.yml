@@ -72,6 +72,7 @@ jobs:
       - name: Check if backend files were modified
         id: backend_changed
         run: |
+          # Check for any changes in the 'backend' directory
           if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^backend/"; then
             echo "backend_changed=true" >> $GITHUB_ENV
           else
@@ -86,8 +87,13 @@ jobs:
           npm run build
           cd $GITHUB_WORKSPACE  # Return to the workspace root
 
-      - name: Restart Backend Service using systemd
+      - name: Restart Backend Service with PM2
         if: env.backend_changed == 'true'
         run: |
-          sudo systemctl restart backend.service
-          sudo systemctl status backend.service
+          cd $GITHUB_WORKSPACE/backend  # Go to the backend directory
+          pm2 restart sf2lv2-backend  # Restart the app with PM2
+
+      - name: Check PM2 Status
+        if: env.backend_changed == 'true'
+        run: |
+          pm2 status  # Check the status of the backend service
