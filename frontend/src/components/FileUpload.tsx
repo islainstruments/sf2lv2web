@@ -25,7 +25,7 @@ const FileUpload: React.FC = () => {
   const [uploadedFilePath, setUploadedFilePath] = useState<string>();
   
   // Use our job status hook for build progress
-  const { status: buildStatus, progress: buildProgress, error: buildError, pluginUrl, retry: retryBuild } = useJobStatus(jobId);
+  const { status: buildStatus, progress: buildProgress, error: buildError, pluginUrl } = useJobStatus(jobId);
 
   const handleFileUpload = async (file: File) => {
     try {
@@ -112,6 +112,7 @@ const FileUpload: React.FC = () => {
           
           // Initialize SpessaSynth
           const ctx = new AudioContext();
+          console.log(ctx,'ctx======')
           await ctx.audioWorklet.addModule('/worklet_processor.min.js');
           const synthInstance = new Synthetizer(ctx.destination, arrayBuffer);
           setSynth(synthInstance);
