@@ -39,7 +39,7 @@ jobs:
       - name: Build Frontend with Docker Compose
         run: |
           cd $GITHUB_WORKSPACE/frontend  # Using $GITHUB_WORKSPACE as the working directory
-          docker compose build
+          docker compose build --no-cache
           docker compose up -d
           docker ps -a
           cd $GITHUB_WORKSPACE  # Return to the workspace root
