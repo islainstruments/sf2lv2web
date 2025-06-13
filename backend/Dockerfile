@@ -4,7 +4,7 @@ RUN apk add --no-cache nodejs npm
 WORKDIR /usr/src/app  
 COPY package*.json ./  
 RUN npm install  
-COPY . . 
+COPY . .  
 RUN npm run build
 RUN npm install uuid
 EXPOSE 4001
