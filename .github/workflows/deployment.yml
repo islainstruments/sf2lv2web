@@ -49,6 +49,9 @@ jobs:
       - name: Install Dependencies & Build Backend
         if: env.backend_changed == 'true'
         run: |
+          export NVM_DIR="$HOME/.nvm"
+          source "$NVM_DIR/nvm.sh"
+          nvm use 22
           cd backend
           npm install
           npm run build
@@ -56,6 +59,9 @@ jobs:
       - name: Start or Restart Backend with PM2
         if: env.backend_changed == 'true'
         run: |
+          export NVM_DIR="$HOME/.nvm"
+          source "$NVM_DIR/nvm.sh"
+          nvm use 22
           cd backend
           if pm2 list | grep -q "sf2lv2-backend"; then
             echo "Restarting existing PM2 process..."
@@ -69,9 +75,16 @@ jobs:
       - name: Setup PM2 Startup Script (Auto-run on reboot)
         if: env.backend_changed == 'true'
         run: |
+          export NVM_DIR="$HOME/.nvm"
+          source "$NVM_DIR/nvm.sh"
+          nvm use 22
           sudo su -c "$(pm2 startup | tail -n 1)"
           pm2 save
 
       - name: PM2 Status
         if: env.backend_changed == 'true'
-        run: pm2 status
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          source "$NVM_DIR/nvm.sh"
+          nvm use 22
+          pm2 status
