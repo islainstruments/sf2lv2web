@@ -20,54 +20,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          repository: islainstruments/sf2lv2web
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ssh-strict: true
-          persist-credentials: true
-          clean: false  # Don't clean the working directory to avoid removing untracked files
-          fetch-depth: 1
-          lfs: false
-          submodules: false
-          set-safe-directory: true
-
-      - name: Debug current directory
-        run: |
-          echo "Workspace Directory: $GITHUB_WORKSPACE"
-          ls -l $GITHUB_WORKSPACE
 
       - name: Build Frontend with Docker Compose
         run: |
-          cd $GITHUB_WORKSPACE/frontend
+          cd frontend
           docker compose build --no-cache
           docker compose up -d
           docker ps -a
-          cd $GITHUB_WORKSPACE
 
       - name: Cleanup unused Docker images
-        run: |
-          sudo docker image prune -f
+        run: docker image prune -f
 
   backend:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          repository: islainstruments/sf2lv2web
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ssh-strict: true
-          persist-credentials: true
-          clean: false  # Don't clean the working directory to avoid removing untracked files
-          fetch-depth: 1
-          lfs: false
-          submodules: false
-          set-safe-directory: true
-
-      - name: Debug current directory
-        run: |
-          echo "Workspace Directory: $GITHUB_WORKSPACE"
-          ls -l $GITHUB_WORKSPACE
 
       - name: Check if backend files were modified
         id: backend_changed
@@ -78,21 +46,32 @@ jobs:
             echo "backend_changed=false" >> $GITHUB_ENV
           fi
 
-      - name: Install Backend Dependencies and Build
+      - name: Install Dependencies & Build Backend
         if: env.backend_changed == 'true'
         run: |
-          cd $GITHUB_WORKSPACE/backend
+          cd backend
           npm install
           npm run build
-          cd $GITHUB_WORKSPACE
 
-      - name: Restart Backend Service with PM2
+      - name: Start or Restart Backend with PM2
         if: env.backend_changed == 'true'
         run: |
-          cd $GITHUB_WORKSPACE/backend
-          pm2 restart sf2lv2-backend  # Restart the backend service
+          cd backend
+          if pm2 list | grep -q "sf2lv2-backend"; then
+            echo "Restarting existing PM2 process..."
+            pm2 restart sf2lv2-backend
+          else
+            echo "Starting PM2 process..."
+            pm2 start dist/index.js --name sf2lv2-backend
+          fi
+          pm2 save
 
-      - name: Check PM2 Status
+      - name: Setup PM2 Startup Script (Auto-run on reboot)
         if: env.backend_changed == 'true'
         run: |
-          pm2 status  # Check the status of the backend service
+          sudo su -c "$(pm2 startup | tail -n 1)"
+          pm2 save
+
+      - name: PM2 Status
+        if: env.backend_changed == 'true'
+        run: pm2 status
